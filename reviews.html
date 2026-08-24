@@ -373,6 +373,7 @@
             flex-wrap: wrap;
         }
         .pagination a {
+            display: inline-block;
             padding: 8px 16px;
             border-radius: 8px;
             background: rgba(17, 29, 53, 0.5);
@@ -380,6 +381,10 @@
             color: #8aaac8;
             transition: 0.3s;
             cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            min-width: 40px;
+            text-align: center;
         }
         .pagination a:hover {
             border-color: #4ab8ff;
@@ -498,7 +503,7 @@
 
                 <!-- ===== КОНТЕЙНЕР ДЛЯ ОТЗЫВОВ ===== -->
                 <div id="reviewsContainer">
-                    <!-- Отзывы будут загружены через JavaScript -->
+                    <div class="reviews-grid" id="reviewsGrid"></div>
                 </div>
 
                 <!-- ===== ПАГИНАЦИЯ ===== -->
@@ -590,7 +595,7 @@
             }
 
             // ===== ВСЕ ОТЗЫВЫ =====
-            const allReviews = [
+            var allReviews = [
                 { author: 'Алексей', date: '14 августа 2026', stars: 5, text: 'Отличная площадка! Выплаты моментальные, бонус реально работает. Уже несколько месяцев без нареканий.' },
                 { author: 'Екатерина', date: '13 августа 2026', stars: 5, text: 'Обожаю слоты Anubis Wrath и Wild Bounty — они приносят крупные выигрыши. Всем советую!' },
                 { author: 'Дмитрий', date: '11 августа 2026', stars: 5, text: 'Пополнил через криптокошелёк, деньги пришли мгновенно. Вывел крупный выигрыш без задержек.' },
@@ -643,51 +648,46 @@
                 { author: 'Регина', date: '12 апреля 2026', stars: 5, text: 'Обожаю играть в Lucky Bear. Выплаты быстрые, игры крутые. 10/10!' }
             ];
 
-            const reviewsPerPage = 15;
-            let currentPage = 1;
-            const totalPages = Math.ceil(allReviews.length / reviewsPerPage);
+            var reviewsPerPage = 15;
+            var currentPage = 1;
+            var totalPages = Math.ceil(allReviews.length / reviewsPerPage);
 
             function renderStars(count) {
                 return '★'.repeat(count) + '☆'.repeat(5 - count);
             }
 
             function renderReviews(page) {
-                const container = document.getElementById('reviewsContainer');
-                const start = (page - 1) * reviewsPerPage;
-                const end = start + reviewsPerPage;
-                const pageReviews = allReviews.slice(start, end);
+                var container = document.getElementById('reviewsGrid');
+                var start = (page - 1) * reviewsPerPage;
+                var end = start + reviewsPerPage;
+                var pageReviews = allReviews.slice(start, end);
 
-                let html = '<div class="reviews-grid">';
-                pageReviews.forEach(r => {
-                    html += `
-                        <div class="review-card">
-                            <div class="stars">${renderStars(r.stars)}</div>
-                            <div class="review-author">${r.author}</div>
-                            <div class="review-date">${r.date}</div>
-                            <div class="review-text">${r.text}</div>
-                        </div>
-                    `;
+                var html = '';
+                pageReviews.forEach(function(r) {
+                    html += '<div class="review-card">' +
+                        '<div class="stars">' + renderStars(r.stars) + '</div>' +
+                        '<div class="review-author">' + r.author + '</div>' +
+                        '<div class="review-date">' + r.date + '</div>' +
+                        '<div class="review-text">' + r.text + '</div>' +
+                    '</div>';
                 });
-                html += '</div>';
                 container.innerHTML = html;
             }
 
             function renderPagination() {
-                const container = document.getElementById('pagination');
-                let html = '';
-                for (let i = 1; i <= totalPages; i++) {
-                    html += `<a class="${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</a>`;
-                }
-                if (currentPage < totalPages) {
-                    html += `<a data-page="${currentPage + 1}">→</a>`;
+                var container = document.getElementById('pagination');
+                var html = '';
+                for (var i = 1; i <= totalPages; i++) {
+                    html += '<a class="' + (i === currentPage ? 'active' : '') + '" data-page="' + i + '">' + i + '</a>';
                 }
                 container.innerHTML = html;
 
                 // ===== СОБЫТИЯ ДЛЯ ПАГИНАЦИИ =====
-                container.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', function(e) {
+                var links = container.querySelectorAll('a');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', function(e) {
                         e.preventDefault();
-                        const page = parseInt(this.dataset.page);
+                        var page = parseInt(this.getAttribute('data-page'));
                         if (page && page >= 1 && page <= totalPages) {
                             currentPage = page;
                             renderReviews(currentPage);
@@ -695,29 +695,12 @@
                             window.scrollTo({ top: document.querySelector('.section-head').offsetTop - 100, behavior: 'smooth' });
                         }
                     });
-                });
+                }
             }
 
             // ===== ЗАГРУЗКА ПЕРВОЙ СТРАНИЦЫ =====
             renderReviews(1);
             renderPagination();
-
-            // ===== АНИМАЦИЯ ПОЯВЛЕНИЯ =====
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            document.querySelectorAll('.review-card').forEach(el => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(20px)';
-                el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                observer.observe(el);
-            });
 
             console.log('Lucky Bear — страница отзывов с пагинацией загружена!');
         })();
